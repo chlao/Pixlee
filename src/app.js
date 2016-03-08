@@ -38,7 +38,7 @@ app.get('/:tagname?', function(request, response){
 	}
 	else{
 		var post = photos.get(tagname, function(response){
-			response.json(post);
+			response.send(JSON.stringify(post));
 		}); 
 
 		// Will still try to render template even if not found 

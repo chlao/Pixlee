@@ -24,7 +24,7 @@ function getPhotos(tagname){
 
 					var i = 0; 
 					for (; i< photos.data.length; i++){
-						console.log(photos.data[i].images.standard_resolution.url);
+						//console.log(photos.data[i].images.standard_resolution.url);
 					}
 					//console.log("photos.data");
 					//console.log(photos.data);
