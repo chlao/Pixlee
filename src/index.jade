@@ -16,7 +16,7 @@
 
 doctype html
 html(lang="en")
-	include ./partials/_head.jade
+	.include /partials/_head.jade
 		// Can access variable by #{varname.propertyname}
 	// Bootstrap the directive - defines the application's scope (where the module will live)
 	body(ng-app="pixleemini" ng-controller="mainCtrl")
@@ -31,4 +31,6 @@ html(lang="en")
 		div.results(ng-reapeat="photo in photos")
 			h1
 			div.photo
+
+		script(src="../../node_modules/angular/angular.min.js")
 	// block contentname - where to inject the layout that this file inherits from (in both layout and inheriting file)

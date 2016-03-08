@@ -18,10 +18,17 @@ function getPhotos(tagname){
 		response.on('end', function(){ 
 			if (response.statusCode === 200){
 				try{
-					console.log(messageBody);
 					// Convert string to object
 					var photos = JSON.parse(messageBody); 
-					console.dir(photos);
+					//console.dir(photos.data);
+
+					var i = 0; 
+					for (; i< photos.data.length; i++){
+						console.log(photos.data[i].images.standard_resolution.url);
+					}
+					//console.log("photos.data");
+					//console.log(photos.data);
+					return photos.data; 
 				} catch (error){
 					// Parse Error 
 					printError(error); 
