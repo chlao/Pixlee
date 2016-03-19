@@ -29,6 +29,7 @@ app.get('/', function(request, response){
 */
 // Add a new route - ? (parameter is optional)
 app.get('/:tagname?', function(request, response){
+	console.log('tag name'); 
 	var tagname = request.params.tagname; 
 	if (tagname === undefined){
 		// 503 - Service Unavailable 
