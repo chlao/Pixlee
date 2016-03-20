@@ -1,4 +1,36 @@
+// extends ./layoutfile.jade - Template for multiple instances across pages - inherits from this file 
+//
+	Write an app that is able to take a hashtag, start date, and end date, and collect submissions
+	from Instagram within this allotted time. */
+	The app should paginate through the endpoint and collect the content whose tag time is in
+	between the start and end dates only. The photo's tag time is defined as the time that the
+	hashtag was tagged with the photo. Normally, that is the caption created time (caption ->
+	created_time). However, if the caption does not contain the desired hashtag, but the
+	submitter of the photo posts a comment with the desired hashtag afterward, that photo will
+	be included in the pagination, under the time the comment was posted. You will want to
+	iterate through the comments key for each photo, and look for the existence of the hashtag. If
+	found, the created_time of the comment should be used as the tag time.
+	The data should then be stored in a permanent data store. Recommendation is to spin a local
+	Postgres server and create a simple table schema to insert the photo data. Data to be stored is to the discretion of the applicant
+
 doctype html
 html(lang="en")
-	.include ./partials/_head.jade
-	
+	.include /partials/_head.jade
+		// Can access variable by #{varname.propertyname}
+	// Bootstrap the directive - defines the application's scope (where the module will live)
+	body(ng-app="pixleemini" ng-controller="mainCtrl")
+		form
+			label(for="tag")
+				input(type="text")
+			label Enter a start date. 
+				input(type="date")
+			label Enter a end date.
+				input(type="date")
+			input(type="submit", ng-click="functionname()")
+		div.results(ng-repeat="photo in photos")
+			h1
+			div.photo
+				img(ng-src="{{photos.url}}")
+
+		script(src="../../node_modules/angular/angular.min.js")
+	// block contentname - where to inject the layout that this file inherits from (in both layout and inheriting file)

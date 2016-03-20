@@ -24,7 +24,7 @@ angularapp.controller('mainCtrl', function($scope, $location, $window){
 });
 
 // Data-binding: app's and logic come together
-// When Angular data is bound to the scope, Angulalr keeps the data in the scope continually up to dat w/ the applications underlying data store
+// When Angular data is bound to the scope, Angular keeps the data in the scope continually up to dat w/ the applications underlying data store
 // Two-way data binding: anytime user interacts w/ app, it updates the data in scope of aplication; any time scope is updated, angular has a process to update the underlying data that's affected
 
 

@@ -11,6 +11,8 @@ var cors = require('cors');
 // Create an instrance of express - allows us to set up any middleware, configure routes, start the server 
 var app = express(); 
 
+require('./database'); 
+
 // Add static server; middleware: logic that tells express how to handle a request in b/t the time request is made by client and b/f it arrives at a route 
 // express.static('path_to_the_public_folder')
 app.use(express.static(__dirname + '/public'));
@@ -31,9 +33,8 @@ app.get('/', function(request, response){
 */
 
 // Add a new route - ? (parameter is optional)
-app.get('/:tagname?', cors(), function(request, response){ 
+app.get('/:tagname?', function(request, response){ 
 	var tagname = request.params.tagname; 
-	console.log(tagname); 
 	if (tagname === undefined){
 		console.log('no results');
 		// 503 - Service Unavailable 
@@ -42,12 +43,15 @@ app.get('/:tagname?', cors(), function(request, response){
 		//response.render(''); 
 	}
 	else{
-		console.log('results' + tagname); 
-		var post = photos.get(tagname, function(response){
-			console.log('results' + tagname); 
-			//response.send(JSON.stringify(post));
-			response.json(post); 
-		}); 
+		// Pass in the callback due to async nature of node.js - otherwise will print before results returned 
+		var post = photos.get(tagname, function(data){
+			var i = 0; 
+			for (; i< photos.data.length; i++){
+				//console.log(photos.data[i].images.standard_resolution.url);
+			}
+			//response.send(JSON.stringify(data));
+			response.render('results', JSON.parse('{"url":' + '"' + data.data[i].images.standard_resolution.url + '" }'));
+		});
 
 		// Will still try to render template even if not found 
 		//var varname = || {}; 
