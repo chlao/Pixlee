@@ -6,6 +6,7 @@
 */
 var photos = require('./photo.js');
 var express = require('express'); // Can use express to access all of the variable's methods, etc. 
+var cors = require('cors'); 
 
 // Create an instrance of express - allows us to set up any middleware, configure routes, start the server 
 var app = express(); 
@@ -13,6 +14,7 @@ var app = express();
 // Add static server; middleware: logic that tells express how to handle a request in b/t the time request is made by client and b/f it arrives at a route 
 // express.static('path_to_the_public_folder')
 app.use(express.static(__dirname + '/public'));
+app.use(cors()); 
 
 //app.set('view engine', 'jade'); // Looks for files w/ jade extension 
 // Define where express will look for templates - node process starts in root, not in src directory
@@ -27,19 +29,24 @@ app.get('/', function(request, response){
 	response.render('index'); 
 }); 
 */
+
 // Add a new route - ? (parameter is optional)
-app.get('/:tagname?', function(request, response){
-	console.log('tag name'); 
+app.get('/:tagname?', cors(), function(request, response){ 
 	var tagname = request.params.tagname; 
+	console.log(tagname); 
 	if (tagname === undefined){
+		console.log('no results');
 		// 503 - Service Unavailable 
 		//response.statusCode(503); 
 		response.send("That tag did not turn up any photos"); 
 		//response.render(''); 
 	}
 	else{
+		console.log('results' + tagname); 
 		var post = photos.get(tagname, function(response){
-			response.send(JSON.stringify(post));
+			console.log('results' + tagname); 
+			//response.send(JSON.stringify(post));
+			response.json(post); 
 		}); 
 
 		// Will still try to render template even if not found 
@@ -52,7 +59,7 @@ app.get('/:tagname?', function(request, response){
 }); 
 
 // Set up development server 
-var server = app.listen(process.env.PORT, function(){
+var server = app.listen(process.env.PORT || 3000, function(){
 	var host = server.address().address;
   	var port = server.address().port;
 

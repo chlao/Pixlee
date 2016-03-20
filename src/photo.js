@@ -6,6 +6,7 @@ function printError(error){
 }
 
 function getPhotos(tagname){
+	console.log('getPhotos: ' + tagname); 
 	var request = https.get("https://api.instagram.com/v1/tags/" + tagname + "/media/recent?access_token=257375661.1677ed0.a8e0fbed6c4b409aba36270a19d90a9b", function(response){
 		var messageBody = ""; 
 
