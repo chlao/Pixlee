@@ -18,10 +18,10 @@ require('./database');
 app.use(express.static(__dirname + '/public'));
 app.use(cors()); 
 
-//app.set('view engine', 'jade'); // Looks for files w/ jade extension 
+app.set('view engine', 'jade'); // Looks for files w/ jade extension 
 // Define where express will look for templates - node process starts in root, not in src directory
 // __dirname = name of the directory that the currently executing script resides in 
-//app.set('views', __dirname + '/views'); 
+app.set('views', __dirname + '/views'); 
 
 // Create a route for a client that makes a GET request at certain URL 
 /*
