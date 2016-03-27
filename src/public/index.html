@@ -24,11 +24,11 @@
 			<input type="submit"> 
 		</form> 
 		<!--<button ng-click> More Results </button> -->
-		<div class="results" ng-repeat="photo in photos" scroll> 
+		<div class="results" ng-repeat="photo in photos" scroll ng-init="load()"> 
 			<h1> </h1> 
 			<div class="photo"> 
 				<img ng-src="{{photo.url}}"> 
-				<img ng-src="{{photo.user_photo}}"> 
+				<img ng-src="{{photo.userphoto}}"> 
 				<p>{{photo.user}}</p>
 				<p>{{photo.time}}</p> 
 				<p>{{photo.link}}</p> 

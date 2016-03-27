@@ -4,8 +4,10 @@ var mongoose = require('mongoose');
 
 // Define a schema 
 var photoSchema = new mongoose.Schema({
-	name: String, 
-	img: String
+	url: String, 
+	userphoto: String, 
+	link: String, 
+	time: String
 }); 
 
 var model = mongoose.model('Photo', photoSchema); 

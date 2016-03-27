@@ -1,10 +1,53 @@
 var angularapp = angular.module('pixleemini', []);
 
+
 angularapp.config(function($httpProvider) {
     //Enable cross domain calls
     $httpProvider.defaults.useXDomain = true;
 });
 
+// Service: functions reponsible to do specific tasks only - properties on this available in controller (service instantiated w/ new)
+angularapp.service('debounce', ['$timeout', function ($timeout) {
+    return function (func, wait, immediate, invokeApply) {
+		// timeout: private variable for instance - returned function will be able to reference this due to closure 
+		// Each call to the returned fnuction will share this common timer 
+		var timeout, args, context, result;
+		function debounce() {
+		// Reference the context and args for the setTimeout function 
+		context = this;
+		args = arguments;
+
+		var later = function () {
+		  timeout = null;
+		  if (!immediate) {
+		    result = func.apply(context, args);
+		  }
+		};
+		// Should the function be called now - if immediate is true, and not already called in timeout, yes
+		var callNow = immediate && !timeout;
+
+		// Each time the returned function is called, the timer starts over 
+		// Will not do anything if invalid timeout id passed in 
+		if (timeout) {
+		  $timeout.cancel(timeout);
+		}
+		timeout = $timeout(later, wait, invokeApply);
+		// Immediate mode and no wait timer - execute the function 
+		if (callNow) {
+		  result = func.apply(context, args);
+		}
+		return result;
+		}
+		debounce.cancel = function () {
+		$timeout.cancel(timeout);
+		timeout = null;
+		};
+		return debounce;
+		};
+ 	}
+]);
+
+// Directive - Something introduces new syntax i.e. in a HTML element, attribute, etc. 
 // Upon scrolling near the body, load more results 
 angularapp.directive("scroll", function($window, $document){
 	return {
@@ -28,26 +71,19 @@ angularapp.directive("scroll", function($window, $document){
 }); 
 // Controller: contain logic for manipulating UI, determine the state of the application; can handle data  
 // $scope = area of operation for controller; will only work part of application you've allowed them to 
-angularapp.controller('mainCtrl', function($scope, $location, $window, $http){
+angularapp.controller('mainCtrl', function($scope, $location, $window, $http, debounce, $q){
 	var nexturl; // Pagination: next results 
+	var queue = []; 
 
-	$scope.photos = [
-	];
+	$scope.photos = [];
 
-	function debounce(func, wait, immediate) {
-		var timeout;
-		return function() {
-			var context = this, args = arguments;
-			var later = function() {
-				timeout = null;
-				if (!immediate) func.apply(context, args);
-			};
-			var callNow = immediate && !timeout;
-			clearTimeout(timeout);
-			timeout = setTimeout(later, wait);
-			if (callNow) func.apply(context, args);
-		};
-	};
+	angular.element(document).ready(function(){
+		$http.get('/api/photos').then(function(response){
+			var photos = response.data.photos;
+ 
+			$scope.photos = photos;
+		});
+	});
 
 	// Scroll to add more
 	$scope.more = debounce(function(){
@@ -82,11 +118,23 @@ angularapp.controller('mainCtrl', function($scope, $location, $window, $http){
 
 	    		// Only show posts that are within the searched parameters 
 	    		//if(time.getTime() >= start.getTime() && time.getTime() <= end.getTime()){
-					$scope.photos.push(JSON.parse('{"url":"' + data.data[i].images.standard_resolution.url + '", "user":"' + data.data[i].user.username + '", "user_photo": "' + data.data[i].user.profile_picture + '", "link":"' + data.data[i].link + '", "time":"' + time + '"}'));
+				var photo = JSON.parse('{"url":"' + data.data[i].images.standard_resolution.url + '", "user":"' + data.data[i].user.username + '", "userphoto": "' + data.data[i].user.profile_picture + '", "link":"' + data.data[i].link + '", "time":"' + time + '"}'); 
+				
+				$scope.photos.push(photo);
+				
+				// Save the photos 
+				request = $http.post('/api/photos', photo); 
+
+				queue.push(request); 
+
+				// Combines multiple promises into a single promise that's resolved when all of the input promises are resolved 
+				// A new promise instance is created when a deferred instance is created; assurance that we will get a result from an action at some point in the future 
+				// Need promises to make deciisons based on the possible results of our call
+				$q.all(queue); 
 				//}
 			}
 		});
-	}, 500); 
+	}, 500); // Parameters are optional in JS - will be undefined if not passed in 
 
 	$scope.tagChange = function(){
 		$http.jsonp('https://api.instagram.com/v1/tags/' + $scope.tagname + '/media/recent?access_token=257375661.1677ed0.a8e0fbed6c4b409aba36270a19d90a9b&callback=JSON_CALLBACK')
@@ -97,7 +145,9 @@ angularapp.controller('mainCtrl', function($scope, $location, $window, $http){
 			var start = new Date($scope.start); 
 			var end = new Date($scope.end); 
 
-			console.log(data); 
+			var request; 
+
+			//console.log(data); 
 
 	    	var i = 0; 
 	    	var time; 
@@ -115,13 +165,24 @@ angularapp.controller('mainCtrl', function($scope, $location, $window, $http){
 
 							time = new Date(data.data[i].comments.data[j].created_time * 1000); 
 						}
-					
-}	    		}
+					}	    		
+				}
 
 	    		// Only show posts that are within the searched parameters 
 	    		//if(time.getTime() >= start.getTime() && time.getTime() <= end.getTime()){
-					$scope.photos.push(JSON.parse('{"url":"' + data.data[i].images.standard_resolution.url + '", "user":"' + data.data[i].user.username + '", "user_photo": "' + data.data[i].user.profile_picture + '", "link":"' + data.data[i].link + '", "time":"' + time + '"}'));
-				//}
+	    		var photo = JSON.parse('{"url":"' + data.data[i].images.standard_resolution.url + '", "user":"' + data.data[i].user.username + '", "userphoto": "' + data.data[i].user.profile_picture + '", "link":"' + data.data[i].link + '", "time":"' + time + '"}'); 
+				
+				$scope.photos.push(photo);
+				
+				// Save the photos 
+				request = $http.post('/api/photos', photo); 
+
+				queue.push(request); 
+
+				// Combines multiple promises into a single promise that's resolved when all of the input promises are resolved 
+				// A new promise instance is created when a deferred instance is created; assurance that we will get a result from an action at some point in the future 
+				// Need promises to make deciisons based on the possible results of our call
+				$q.all(queue); 
 			}
 		});
 		/*
