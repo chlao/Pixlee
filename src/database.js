@@ -8,6 +8,6 @@ mongoose.connect('mongodb://clao:dbpassword@ds025439.mlab.com:25439/pixlee', fun
 		console.log('Error: ' + err); 
 	}
 	else{
-		console.log('Successfully connected'); 
+		console.log('Successfully connected to database'); 
 	}
 }); 

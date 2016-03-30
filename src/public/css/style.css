@@ -1,0 +1,118 @@
+body{
+	background-color: #fafafa; 
+	font-family: 'Open Sans', sans-serif;
+}
+.form{
+	background-color: white; 
+	border: 1px solid #edeeee; 
+	margin-bottom: 50px; 
+}
+form{
+	padding: 50px; 
+	margin: 0 auto;
+	width: 500px;
+}
+form > div{
+	margin-bottom: 10px;
+}
+input:not(#submitbtn){
+	border-radius: 10px; 
+	box-shadow: none;
+	border: 1px solid #edeeee; 
+	margin-bottom: 10px;
+	width: 250px;
+	height: 2em;
+}
+input:focus{
+	outline: none;
+	background-color: #edeeee; 
+}
+label{
+	float: left;
+	width: 10em;
+	margin-right: 1em;
+	text-align: right;
+}
+input[type="submit"]{
+	border-radius: 5px;
+	background-color: #125688;
+	color: white;
+	padding: 10px;
+	text-transform: uppercase;
+	border: none; 
+	margin: 0 auto;
+	width: 355px;
+}
+a{
+	text-decoration: none;
+	color: black;
+}
+#loading{
+	margin: 0 auto; 
+}
+.results{
+	width: 1400px;
+	margin: 0 auto;
+}
+.card{
+	margin-bottom: 50px;
+	border: 1px solid #edeeee; 
+	border-radius: 3px;
+	background-color: white; 
+	vertical-align: top;
+}
+.card:not(:last-child){
+	margin-right: 50px;
+}
+.card > a{	
+	padding: 20px;
+	float: right;
+}
+.username{
+	color: #125688;
+	font-weight: 600;
+	float: left;
+}
+.username > span{
+	text-overflow: ellipsis;
+	white-space: nowrap; 
+    width: 150px;
+    overflow: hidden;
+}
+.profilepic{
+	border-radius: 50%; 
+	width: 28px;	
+	margin-left: 20px;
+	margin-right: 10px;
+}
+.content{
+	width: 400px;
+	clear: both;
+	border: 1px solid #edeeee; 
+}
+.time{
+	float: right;
+	color: #a5a7aa; 
+	font-size: 15px;
+	margin-right: 20px;
+}
+.instalogo{
+	width: 28px; 
+	margin-right: 10px;
+}
+.username > span, .profilepic, .instalogo{
+	vertical-align: middle; 
+}
+.content, #loading, input[type="submit"], form > div{
+	display: block;
+}
+.username, .time, .card > a{
+	display: inline;
+}
+.card, .username > span, .hashtag{
+	display: inline-block;
+}
+.hashtag{
+	padding: 20px;
+	margin: 0;
+}

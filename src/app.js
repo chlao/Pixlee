@@ -6,8 +6,11 @@
 */
 var photos = require('./photo.js');
 var express = require('express'); // Can use express to access all of the variable's methods, etc. 
-var cors = require('cors'); 
+//var cors = require('cors'); 
+
 var Photo = require('./models/photo'); // Database Schema
+var Video = require('./models/video'); 
+
 var parser = require('body-parser'); 
 
 // Create an instrance of express - allows us to set up any middleware, configure routes, start the server 
@@ -18,7 +21,7 @@ require('./database');
 // Add static server; middleware: logic that tells express how to handle a request in b/t the time request is made by client and b/f it arrives at a route 
 // express.static('path_to_the_public_folder')
 app.use(express.static(__dirname + '/public'));
-app.use(cors());
+//app.use(cors());
 app.use(parser.json()); 
 
 // Create modular, mountable route handlers, mini app is returned (v. app object w/ express() - Express application)
@@ -39,6 +42,18 @@ router.get('/photos', function(request, response){
 	})
 }); 
 
+router.get('/videos', function(request, response){
+	Video.find(function(err, videos){
+		if (err){
+			// 500: Internal Server Error 
+			return response.status(500).json({message: err.message}); 
+		}
+		else {
+			response.json({'videos': videos}); 
+		}
+	})
+}); 
+
 router.post('/photos', function(request, response){
 	var photo = request.body; 
 	Photo.create(photo, function(err, photo){
@@ -48,6 +63,18 @@ router.post('/photos', function(request, response){
 		}
 		// If no body parser installed, will probably get back empty response body 
 		response.json({'photos': photo}); 
+	})
+}); 
+
+router.post('/videos', function(request, response){
+	var video = request.body; 
+	Video.create(video, function(err, video){
+		if (err){
+			// Callback function will ext 
+			return response.status(500).json({err: err.message}); 
+		}
+		// If no body parser installed, will probably get back empty response body 
+		response.json({'videos': video}); 
 	})
 }); 
 
@@ -104,8 +131,3 @@ var server = app.listen(process.env.PORT || 3000, function(){
 
   	console.log('Application listening at http://%s:%s', host, port);
 }); 
-
-// Direct your user to authorization URL 
-//window.location = "https://api.instagram.com/oauth/authorize/?client_id=746c59e19d514763a9a7d5fb1547b7da&redirect_uri=REDIRECT-URI&response_type=code"
-
-// Recieve the redirect from Instagram

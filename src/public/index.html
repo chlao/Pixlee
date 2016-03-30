@@ -7,32 +7,54 @@
 	    <meta name="viewport" content="width=device-width, initial-scale=1">
 		<title> Pixlee Mini-Project </title> 
 		<base href="/">
+
+		<link href="css/style.css" rel="stylesheet" type="text/css">
+		<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+
+		<script src="js/vendor/angular.min.js"></script>
+		<script src="js/vendor/jquery-1.12.0.min.js"></script> 
 	</head> 
 
-	<link href="css/style.css" rel="stylesheet" type="text/css"> 
-	<script src="js/vendor/angular.min.js"></script>
-	<script src="js/vendor/jquery-1.12.0.min.js"></script> 
 	<body ng-app="pixleemini" ng-controller="mainCtrl"> 
-		<form ng-submit="tagChange()"> 
-			<label> Enter a tag to search for. </label> 
-				<input type="text" ng-model="tagname"> 
-			<!-- ngModel directive binds an input, select, textarea (or custom form control) to a property on the scope--> 
-			<label> Enter a start date</label>  
-				<input type="date" ng-model="start"> 
-			<label> Enter a end date.</label> 
-				<input type="date" ng-model="end"> 
-			<input type="submit"> 
-		</form> 
+		<div class="form"> 
+			<form ng-submit="tagChange()"> 
+				<div> 
+					<label> # </label>
+					<input type="text" ng-model="tagname" placeholder="Search Instagram"> 
+				</div> 
+				<!-- ngModel directive binds an input, select, textarea (or custom form control) to a property on the scope--> 
+				<div> 
+					<label> Start date </label>  
+					<input type="date" ng-model="start">
+				</div> 
+				<div>  
+					<label> End date </label> 
+					<input type="date" ng-model="end"> 
+				</div> 
+				<input id="submitbtn" type="submit"> 
+			</form> 
+		</div> 
 		<!--<button ng-click> More Results </button> -->
-		<div class="results" ng-repeat="photo in photos" scroll ng-init="load()"> 
-			<h1> </h1> 
-			<div class="photo"> 
-				<img ng-src="{{photo.url}}"> 
-				<img ng-src="{{photo.userphoto}}"> 
-				<p>{{photo.user}}</p>
-				<p>{{photo.time}}</p> 
-				<p>{{photo.link}}</p> 
+		<div class="results">
+			<h1> Previously Searched Results </h1> 
+			<img id="loading" src="img/ring-alt.gif" ng-show="loading" scroll> 
+			<div class="card" ng-repeat="photo in photos"> 
+				<p class="username"><img class="profilepic" ng-src="{{photo.userphoto}}"> <span>{{photo.username}}</span></p> 
+				<p class="time">{{photo.time}}</p> 
+				<img class="content" ng-src="{{photo.url}}">
+				<p class="hashtag"> #{{photo.tag}} </p> 
+				<a ng-href="{{photo.link}}"><img class="instalogo" src="img/Glyph_Logo_png.png">See on Instagram</a>
 			</div> 
+			<div class="card" ng-repeat="video in videos"> 
+				<p class="username"><img class="profilepic" ng-src="{{video.userphoto}}"> <span>{{video.username}}</span></p> 
+				<p class="time">{{video.time}}</p> 
+				<video class="content" controls ng-attr-poster="{{video.poster}}"> 
+					<source ng-src="{{video.url | trusted}}" type="video/mp4"> 
+				</video> 
+				<p class="hashtag"> #{{video.tag}} </p> 
+				<a ng-href="{{video.link}}"><img class="instalogo" src="img/Glyph_Logo_png.png">See on Instagram</a>
+			</div> 
+			<img id="loading" src="img/ring-alt.gif" ng-show="loadingmore" scroll> 
 		</div>
 		<script src="js/mainajax.js"></script>  
 	</body> 
