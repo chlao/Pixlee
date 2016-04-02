@@ -10,6 +10,7 @@ var express = require('express'); // Can use express to access all of the variab
 
 var Photo = require('./models/photo'); // Database Schema
 var Video = require('./models/video'); 
+var Media = require('./models/media'); 
 
 var parser = require('body-parser'); 
 
@@ -29,6 +30,30 @@ var router = express.Router();
 
 // Prefix 'api' to prevent conflict w/ static files routes 
 app.use('/api', router); 
+
+router.get('/medium', function(request, response){
+	Media.find(function(err, media){
+		if (err){
+			// 500: Internal Server Error 
+			return response.status(500).json({message: err.message}); 
+		}
+		else {
+			response.json({'medium': media}); 
+		}
+	})
+}); 
+
+router.post('/medium', function(request, response){
+	var media = request.body; 
+	Media.create(media, function(err, media){
+		if (err){
+			// Callback function will ext 
+			return response.status(500).json({err: err.message}); 
+		}
+		// If no body parser installed, will probably get back empty response body 
+		response.json({'medium': media}); 
+	})
+}); 
 
 router.get('/photos', function(request, response){
 	Photo.find(function(err, photos){

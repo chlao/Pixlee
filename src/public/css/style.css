@@ -64,7 +64,7 @@ a{
 .card:not(:last-child){
 	margin-right: 50px;
 }
-.card > a{	
+.card > div > a{	
 	padding: 20px;
 	float: right;
 }
