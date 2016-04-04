@@ -48,7 +48,7 @@ a{
 	color: black;
 }
 #loading{
-	margin: 0 auto; 
+	margin: 20px auto; 
 }
 .results{
 	width: 1400px;
@@ -64,7 +64,7 @@ a{
 .card:not(:last-child){
 	margin-right: 50px;
 }
-.card > div > a{	
+.link{	
 	padding: 20px;
 	float: right;
 }
