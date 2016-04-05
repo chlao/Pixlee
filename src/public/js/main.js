@@ -252,7 +252,6 @@ angularapp.service('dataservice', function($http, $q, checkinput){
 			// Increment the number of results found 
 			numResults++; 
 		}
-
 		return numResults; 
 	}
 }); 
@@ -291,8 +290,7 @@ angularapp.controller('mainCtrl', function($scope, $window, $http, debounce, dat
 
 	$scope.medium = []; 
 
-	$scope.loading = false; 
-	$scope.loadingmore = false;  
+	$scope.loading = false;  
 
 	$scope.error = false; 
 
@@ -303,19 +301,19 @@ angularapp.controller('mainCtrl', function($scope, $window, $http, debounce, dat
 
 	// Scroll to add more
 	$scope.more = debounce(function(){ 
-		var numResults;
 		// If there currently pictures loading, do not look for more pictures 
-		if ($scope.loading || $scope.loadingmore){
+		if ($scope.loading){
 			return; 
 		}
 
-		$scope.loadingmore = true; 
+		$scope.loading = true; 
 
 		$scope.recurse(0); 
 	}, 500); // Parameters are optional in JS - will be undefined if not passed in
 
 	$scope.tagChange = function(){ 
 		$scope.loading = true; 
+		$scope.error = false; 
 
 		// Number of results we get from the API call 
 		var numResults;
@@ -339,15 +337,13 @@ angularapp.controller('mainCtrl', function($scope, $window, $http, debounce, dat
 
 			numResults = dataservice.processmedia($scope, data, 0);  
 
+			$('body').animate({scrollTop: prevpageposition}, 'slow');
+
 	    	if (numResults < 20){
 	    		$scope.recurse(numResults); 
 	    	} else{ // > 20 Results found
 	    		$scope.loading = false; 
 	    	}
-
-	    	$('body').animate({scrollTop: prevpageposition}, 'slow');
-
-	    	$scope.loadingmore = true; 
 		});
 	};
 
@@ -357,15 +353,10 @@ angularapp.controller('mainCtrl', function($scope, $window, $http, debounce, dat
 		.success(function(data){
 			numResults = dataservice.processmedia($scope, data, prevNumResults); 
 
-			//console.log(numResults); 
-			//console.log($scope.medium); 
-
 	    	if (numResults < 20){
 	    		$scope.recurse(numResults); 
 	    	} else{
-	    		//console.log(">20"); 
 	    		$scope.loading = false; 
-	    		$scope.loadingmore = false; 
 	    	}
 		});
 	};

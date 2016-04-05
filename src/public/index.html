@@ -43,7 +43,6 @@
 		</div> 
 		<div class="results">
 			<h1> Search Results </h1> 
-			<img id="loading" src="img/ring-alt.gif" ng-show="loading" scroll> 
 			<div class="card" ng-repeat="media in medium" ng-switch on="media.type"> 
 				<div ng-switch-when="photo"> 
 					<p class="username"><img class="profilepic" ng-src="{{media.userphoto}}"> <span>{{media.username}}</span></p> 
@@ -62,7 +61,7 @@
 					<a class="link" ng-href="{{media.link}}"><img class="instalogo" src="img/Glyph_Logo_png.png">See on Instagram</a>
 				</div> 
 			</div> 
-			<img id="loading" src="img/ring-alt.gif" ng-show="loadingmore" scroll> 
+			<img id="loading" src="img/ring-alt.gif" ng-show="loading" scroll> 
 		</div>
 		<script src="js/main.js"></script>  
 	</body> 

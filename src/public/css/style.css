@@ -117,11 +117,12 @@ a{
 	margin: 0;
 }
 .error, .warning{
-	width: 50%; 
+	width: 300px; 
+	text-align: center; 
+	margin: 0 auto;
 }
 .error{
-	color: rgb(236, 100, 75); 
-	margin: 0 auto; 
+	color: rgb(236, 100, 75);  
 }
 .warning{
 	color: rgb(249, 191, 59); 
