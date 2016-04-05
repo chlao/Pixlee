@@ -116,3 +116,13 @@ a{
 	padding: 20px;
 	margin: 0;
 }
+.error, .warning{
+	width: 50%; 
+}
+.error{
+	color: rgb(236, 100, 75); 
+	margin: 0 auto; 
+}
+.warning{
+	color: rgb(249, 191, 59); 
+}

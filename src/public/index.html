@@ -25,14 +25,21 @@
 				<!-- ngModel directive binds an input, select, textarea (or custom form control) to a property on the scope--> 
 				<div> 
 					<label> Start date </label>  
-					<input type="date" ng-model="start" ng-change="changeDate()">
+					<input type="date" ng-model="start">
 				</div> 
 				<div>  
 					<label> End date </label> 
-					<input type="date" ng-model="end" ng-change="changeDate()"> 
+					<input type="date" ng-model="end"> 
 				</div> 
 				<input id="submitbtn" type="submit"> 
 			</form> 
+		</div>
+		<div ng-switch="errortype" ng-show="error"> 
+			<p class="error" ng-switch-when="noresults"> No results were found with that tag. </p> 
+			<p class="error" ng-switch-when="undefined"> You didn't specify any tags to search for. </p> 
+			<p class="error" ng-switch-when="invalid"> Please enter a valid tag. (i.e. no spaces) </p> 
+			<p class="warning" ng-switch-when="startend"> Your start date was greater than your end date. The start date and end date will be swapped. </p> 
+			<p class="error" ng-switch-when="future"> Please check your start and end time. As cool as it would be, we can't look into the future. </p> 
 		</div> 
 		<div class="results">
 			<h1> Search Results </h1> 

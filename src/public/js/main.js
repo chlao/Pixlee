@@ -51,7 +51,29 @@ angularapp.service('debounce', ['$timeout', function ($timeout) {
  	}
 ]);
 
-angularapp.service('dataservice', function($http, $q){
+angularapp.service('checkinput', function(){
+	this.handleError = function(scope, reason){
+		switch(reason){
+			case 'undefined': 
+				scope.errortype = 'undefined'; 
+				break; 
+			case 'invalid': 
+				scope.errortype = 'invalid'; 
+				break; 
+			case 'future': 
+				scope.errortype = 'future'; 
+				break; 
+			case 'noresults': 
+				scope.errortype = 'noresults'; 
+				break; 
+		}
+
+		scope.error = true; 
+		scope.loading = false; 
+	}
+}); 
+
+angularapp.service('dataservice', function($http, $q, checkinput){
 	this.getmedia = function(scope){
 		$http.get('/api/medium').then(function(response){
 			var medium = response.data.medium;
@@ -74,21 +96,66 @@ angularapp.service('dataservice', function($http, $q){
 	    $q.all(queue); 
 	}
 
-	this.processmedia = function(scope, data, start, end, numResults){
+	// Fliter out the results by time, and format the data to store in the database 
+	this.processmedia = function(scope, data, numResults){
 		var i = 0; 
-    	var time; 
-    	var url; 
     	var numMedia = data.data.length; 
 
+    	// Check if the media type is a video or a photo
 		var video = false; 
 
 		// Normalize the date to compare with inputs 
 		var dateTime; 
 
-		var hour, minute, hourminute; 
+		var time, hour, minute, hourminute; 
+
+		// Stores the media object that we are saving
+		var media; 
+
+		// Swap the start and end values if start > end 
+		var tempstart; 
+
+		var currentTime; 
+		var dateCurrentTime; 
+
+		var duplicate = false; 
+
+		// No results exist for that tag 
+		if (numMedia == 0){
+			checkinput.handleError(scope, 'noresults'); 
+			return; 
+		}
+
+		// Input: search times
+		var start = new Date(scope.start); 
+		var end = new Date(scope.end); 
+		// Epoch time 
+		start = start.getTime()/1000; 
+		end = end.getTime()/1000; 
+
+		currentTime = new Date(); 
+
+		dateCurrentTime = currentTime.getTime() - currentTime.getHours() * 3600000 - currentTime.getMinutes() * 60000 - currentTime.getSeconds() * 1000; 
+		dateCurrentTime = Number(String(dateCurrentTime).substring(0,10));
+
+		if (start > dateCurrentTime || end > dateCurrentTime){ 
+			checkinput.handleError(scope,'future'); 
+			return; 
+		}	 
 
 		// Pagination - next url 
 		scope.nexturl = data.pagination.next_url;   
+
+		// Warning
+		if (end != 0 && start > end){
+			tempstart = start; 
+			start = end; 
+			end = tempstart; 
+
+    		scope.error = true; 
+    		scope.errortype = "startend"; 
+		}
+
 
     	for (; i < numMedia; i++){ 
     		// Check if there is a caption
@@ -100,16 +167,16 @@ angularapp.service('dataservice', function($http, $q){
     		if(data.data[i].comments.count != 0){ // Check if there are comments 
     			var j = 0; 
     			for (; j < data.data[i].comments.data.length; j++){
-    				// Check if comments contain the tag, and the comment is from the submitter, and caption does not contain the tag 
+    				// Check if comments contain the tag, and the comment is from the submitter, and if a caption exists, the caption does not contain the tag 
 					if ((data.data[i].comments.data[j].text.indexOf('#' + scope.tagname) > -1) && 
-						(data.data[i].comments.data[j].from.username == data.data[i].user.username) && 
-						(data.data[i].caption != null && data.data[i].caption.text.indexOf('#' + scope.tagname) == -1)){
+						(data.data[i].comments.data[j].from.username == data.data[i].user.username) &&
+						(data.data[i].caption == null || data.data[i].caption.text.indexOf('#' + scope.tagname) == -1)){
 							time = new Date(data.data[i].comments.data[j].created_time * 1000); 
 					}
 				}	    		
 			} 
 
-			if (typeof time === undefined){
+			if (typeof time == 'undefined'){
 				console.log(data.data[i]); 
 			}
 
@@ -117,7 +184,7 @@ angularapp.service('dataservice', function($http, $q){
 			dateTime = Number(String(dateTime).substring(0,10));
 
 			// Only show posts that are within the searched parameters 
-			if (end != 0 && dateTime > end || start != 0 && dateTime < start){
+			if ((end != 0 && dateTime > end) || (start != 0 && dateTime < start)){
 				continue;
 			}
 
@@ -133,33 +200,56 @@ angularapp.service('dataservice', function($http, $q){
 				minute = '0' + String(minute); 
 			}
 
+			// Use American time standards (not 24-hour, AM and PM)
 			if (hour > 12){
 				hour = hour % 12; 
 				hourminute = String(hour) + ':' + minute + ' PM'; 
-			}
-			else{
+			} else{
 				hourminute = String(hour) + ':' + minute + ' AM'; 
 			}
 
 			year = String(time.getYear()).substring(1); 
 
-			var time = (time.getMonth() + 1) + '/' + time.getDate() + '/' + year + ' at ' + hourminute; 
+			time = (time.getMonth() + 1) + '/' + time.getDate() + '/' + year + ' at ' + hourminute; 
 
-			var media; 
+			media = {
+				username: data.data[i].user.username, 
+				userphoto: data.data[i].user.profile_picture, 
+				link: data.data[i].link, 
+				time: time, 
+				tag: scope.tagname, 
+				id: data.data[i].id, 
+			};
 
     		if (video == true){ 
-    			media = JSON.parse('{"url":"' + data.data[i].videos.standard_resolution.url + '", "username":"' + data.data[i].user.username + '", "userphoto": "' + data.data[i].user.profile_picture + '", "link":"' + data.data[i].link + '", "time":"' + time + '", "poster":"' + data.data[i].images.standard_resolution.url + '", "tag":"' + scope.tagname + '", "type": "video"}'); 
-    		}
-    		else{
-    			media = JSON.parse('{"url":"' + data.data[i].images.standard_resolution.url + '", "username":"' + data.data[i].user.username + '", "userphoto": "' + data.data[i].user.profile_picture + '", "link":"' + data.data[i].link + '", "time":"' + time + '", "tag":"' + scope.tagname + '", "type": "photo"}'); 
+    			media.url = data.data[i].videos.standard_resolution.url; 
+    			media.poster = data.data[i].images.standard_resolution.url; 
+    			media.type = "video"; 
+    		} else{
+    			media.url = data.data[i].images.standard_resolution.url; 
+    			media.type = "photo"; 
+			}
+
+			// Reset variable
+			video = false; 
+
+			var k = scope.medium.length - 1; 
+			for (; k >= 0; k--){
+				if (media.id == scope.medium[k].id){
+					duplicate = true; 
+					break; 
+				}
+			}
+
+			if (duplicate){
+				duplicate = false; // Reset variable
+				continue; 
 			}
 
 			scope.medium.push(media); 
 			this.savemedium(media); 
 
-			// Reset variable
-			video = false; 
-
+			// Increment the number of results found 
 			numResults++; 
 		}
 
@@ -168,7 +258,7 @@ angularapp.service('dataservice', function($http, $q){
 }); 
 
 // Directive - Something introduces new syntax i.e. in a HTML element, attribute, etc. 
-// Upon scrolling near the body, load more results 
+// Upon scrolling near the end of the results, load more results 
 angularapp.directive("scroll", function($window, $document){
 	return {
 		restrict: 'A', 
@@ -184,6 +274,8 @@ angularapp.directive("scroll", function($window, $document){
 				windowBottom = windowHeight + window.pageYOffset;
 				if (windowBottom >= docHeight && scope.tagname) {
 					scope.more(); 
+					// $apply runs $rootScope.$digest() to update values 
+					// $apply tells Angular of the changes made outside the Angular context 
 					scope.$apply(); 
 				}
 			});
@@ -192,7 +284,9 @@ angularapp.directive("scroll", function($window, $document){
 }); 
 // Controller: contain logic for manipulating UI, determine the state of the application; can handle data  
 // $scope = area of operation for controller; will only work part of application you've allowed them to 
-angularapp.controller('mainCtrl', function($scope, $window, $http, debounce, dataservice){
+
+// Data binding means that when you change something in the view, the scope model automatically updates 
+angularapp.controller('mainCtrl', function($scope, $window, $http, debounce, dataservice, checkinput){
 	$scope.nexturl; // Pagination: next results 
 
 	$scope.medium = []; 
@@ -200,21 +294,7 @@ angularapp.controller('mainCtrl', function($scope, $window, $http, debounce, dat
 	$scope.loading = false; 
 	$scope.loadingmore = false;  
 
-	var start = new Date($scope.start); 
-	var end = new Date($scope.end); 
-
-	// Epoch time 
-	start = String(start.getTime()/1000); 
-	end = String(end.getTime()/1000); 
-
-	$scope.changeDate = function(){
-		start = new Date($scope.start); 
-		end = new Date($scope.end); 
-
-		// Epoch time 
-		start = String(start.getTime()/1000); 
-		end = String(end.getTime()/1000); 
-	}
+	$scope.error = false; 
 
 	// Display the photos and videos when the page loads 
 	angular.element(document).ready(function(){
@@ -223,43 +303,51 @@ angularapp.controller('mainCtrl', function($scope, $window, $http, debounce, dat
 
 	// Scroll to add more
 	$scope.more = debounce(function(){ 
+		var numResults;
 		// If there currently pictures loading, do not look for more pictures 
-		if (!$scope.loading && !$scope.loadingmore){
-			$scope.loadingmore = true; 
-			$http.jsonp($scope.nexturl + '&callback=JSON_CALLBACK')
-			.success(function(data){
-		    	var numResults = dataservice.processmedia($scope, data, start, end, 0); 
-
-		    	if (numResults < 20){
-		    		console.log('more'); 
-		    		$scope.recurse(numResults); 
-		    	}
-				else{
-					$scope.loadingmore = false; 
-				}
-			});
+		if ($scope.loading || $scope.loadingmore){
+			return; 
 		}
+
+		$scope.loadingmore = true; 
+
+		$scope.recurse(0); 
 	}, 500); // Parameters are optional in JS - will be undefined if not passed in
 
-	$scope.tagChange = function(){
+	$scope.tagChange = function(){ 
 		$scope.loading = true; 
 
+		// Number of results we get from the API call 
 		var numResults;
+
+		// Store position of the end of page, or where the new results will show 
+		var prepageposition; 
+
+		// If there was no tag defined as input 
+		if (typeof $scope.tagname == 'undefined'){
+			checkinput.handleError($scope, 'undefined'); 
+			return; 
+		} else if ($scope.tagname.indexOf(' ') >= 0 || $scope.tagname.length == 0){
+			checkinput.handleError($scope, 'invalid'); 
+			return; 
+		}
 
 		$http.jsonp('https://api.instagram.com/v1/tags/' + $scope.tagname + '/media/recent?access_token=257375661.1677ed0.a8e0fbed6c4b409aba36270a19d90a9b&callback=JSON_CALLBACK')
 		.success(function(data){ 
 			// Previous document height 
-			var prevpageposition = $(document).height();
+			prevpageposition = $(document).height();
 
-			numResults = dataservice.processmedia($scope, data, start, end, 0); 
-
-			console.log(numResults); 
+			numResults = dataservice.processmedia($scope, data, 0);  
 
 	    	if (numResults < 20){
 	    		$scope.recurse(numResults); 
+	    	} else{ // > 20 Results found
+	    		$scope.loading = false; 
 	    	}
 
 	    	$('body').animate({scrollTop: prevpageposition}, 'slow');
+
+	    	$scope.loadingmore = true; 
 		});
 	};
 
@@ -267,16 +355,17 @@ angularapp.controller('mainCtrl', function($scope, $window, $http, debounce, dat
 		var numResults;
 		$http.jsonp($scope.nexturl + '&callback=JSON_CALLBACK')
 		.success(function(data){
-			numResults = dataservice.processmedia($scope, data, start, end, prevNumResults); 
+			numResults = dataservice.processmedia($scope, data, prevNumResults); 
 
-			console.log(numResults); 
-			console.log($scope.medium); 
+			//console.log(numResults); 
+			//console.log($scope.medium); 
 
 	    	if (numResults < 20){
 	    		$scope.recurse(numResults); 
-	    	}
-	    	else{
+	    	} else{
+	    		//console.log(">20"); 
 	    		$scope.loading = false; 
+	    		$scope.loadingmore = false; 
 	    	}
 		});
 	};

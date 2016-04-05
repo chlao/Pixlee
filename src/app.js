@@ -8,7 +8,7 @@ var express = require('express'); // Can use express to access all of the variab
 
 var Media = require('./models/media'); // Database schema
 
-//
+// Parse the request data as JSON 
 var parser = require('body-parser'); 
 
 // Create an instrance of express - allows us to set up any middleware, configure routes, start the server 
@@ -19,7 +19,7 @@ require('./database');
 // Add static server; middleware: logic that tells express how to handle a request in b/t the time request is made by client and b/f it arrives at a route 
 // express.static('path_to_the_public_folder')
 app.use(express.static(__dirname + '/public'));
-//app.use(cors());
+
 app.use(parser.json()); 
 
 // Create modular, mountable route handlers, mini app is returned (v. app object w/ express() - Express application)
