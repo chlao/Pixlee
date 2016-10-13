@@ -1,6 +1,6 @@
 # Pixlee
 
-NOTE: mlab has made updates that affected this project and the project no longer works.
+###NOTE: mlab has made updates that affected this project and the project no longer works.
 
 To run locally, use the command "node src/app.js" and open up your browser to localhost:5000. 
 
